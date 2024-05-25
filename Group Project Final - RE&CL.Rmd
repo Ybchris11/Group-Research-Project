@@ -1,0 +1,856 @@
+---
+title: "group project final"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+require(plyr)
+require(dplyr)
+require(tidyverse)
+require(ggplot2)
+require(stargazer)
+require(rpart)
+require(rpart.plot)
+require(class)
+require(caret)
+library(lme4)
+library(haven)
+require(haven)
+require(lme4)
+```
+
+# GROUP PROJECT FINAL : Rosairi Estevez and Chris Lacroix
+
+## PSY V0500; Kevin Foster
+
+
+
+### `SIMPLE STATS MH NEED and GET`
+
+```{r}
+NN <- length(Household_Pulse_data$SEXUAL_ORIENTATION)
+set.seed(12345)
+restrict_1 <- (runif(NN) < 0.3) #just use 30%
+summary(restrict_1)
+```
+
+
+```{r}
+Householdsmall <- subset(Household_Pulse_data, restrict_1)
+```
+
+```{r}
+Householdsmall$MHLTH_NEED <- recode(Householdsmall$MHLTH_NEED, "NA" = NULL, "all children need mental health treatment" = 1, "some but not all children" = 1, "no, none of the children" = 2)
+```
+
+
+
+```{r}
+Householdsmall$MHLTH_GET <- recode(Householdsmall$MHLTH_GET, "NA" = NULL, "all children get the mental health treatment they need" = 1, "some but not all children" = 1, "no, none of the children" = 2)
+```
+
+
+
+```{r}
+summary1 <- ddply(Householdsmall,.(SEXUAL_ORIENTATION), summarize, mean_mentalhealth = mean(MHLTH_NEED, na.rm = TRUE), sd_mentalhealth = sd(MHLTH_NEED, na.rm = TRUE), n_obs = sum(!is.na(MHLTH_NEED)) )
+
+summary1
+```
+
+
+```{r}
+summary2 <- ddply(Householdsmall,.(SEXUAL_ORIENTATION), summarize, mean_mentalhealth = mean(MHLTH_GET, na.rm = TRUE), sd_mentalhealth = sd(MHLTH_GET, na.rm = TRUE), n_obs = sum(!is.na(MHLTH_GET)) )
+
+summary2
+```
+```{r}
+summary(Householdsmall$MHLTH_NEED[Householdsmall$SEXUAL_ORIENTATION == "gay or lesbian"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_NEED[Householdsmall$SEXUAL_ORIENTATION == "bisexual"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_NEED[Householdsmall$SEXUAL_ORIENTATION == "something else"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_NEED[Householdsmall$SEXUAL_ORIENTATION == "dont know"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_NEED[Householdsmall$SEXUAL_ORIENTATION == "straight"])
+```
+
+
+```{r}
+summary(Householdsmall$MHLTH_GET[Householdsmall$SEXUAL_ORIENTATION == "gay or lesbian"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_GET[Householdsmall$SEXUAL_ORIENTATION == "straight"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_GET[Householdsmall$SEXUAL_ORIENTATION == "bisexual"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_GET[Householdsmall$SEXUAL_ORIENTATION == "something else"])
+```
+
+```{r}
+summary(Householdsmall$MHLTH_GET[Householdsmall$SEXUAL_ORIENTATION == "dont know"])
+```
+
+
+
+
+### `SIMPLE STATS ANXIOUS and DOWN`
+
+```{r}
+Householdsmall$ANXIOUS <- recode(Householdsmall$ANXIOUS, "NA" = NULL, "no anxiety over past 2 wks" = 0, "several days anxiety over past 2 wks" = 1, "more than half the days anxiety over past 2 wks" = 2, "nearly every day anxiety" = 3)
+```
+
+```{r}
+Householdsmall$DOWN <- recode(Householdsmall$DOWN, "NA" = NULL, "no days in past 2 wks feeling depressed" = 0, "several days over past 2 wks" = 1, "more than half the days over past 2 wks" = 2, "nearly every day" = 3)
+```
+
+
+```{r}
+summary3 <- ddply(Householdsmall,.(SEXUAL_ORIENTATION), summarize, mean_depression = mean(DOWN, na.rm = TRUE), sd_depression = sd(DOWN, na.rm = TRUE), n_obs = sum(!is.na(DOWN)) )
+
+summary3
+```
+
+```{r}
+summary(Householdsmall$DOWN[Householdsmall$SEXUAL_ORIENTATION == "gay or lesbian"])
+```
+
+```{r}
+summary(Householdsmall$DOWN[Householdsmall$SEXUAL_ORIENTATION == "bisexual"])
+```
+
+```{r}
+summary(Householdsmall$DOWN[Householdsmall$SEXUAL_ORIENTATION == "something else"])
+```
+
+```{r}
+summary(Householdsmall$DOWN[Householdsmall$SEXUAL_ORIENTATION == "dont know"])
+```
+
+```{r}
+summary(Householdsmall$DOWN[Householdsmall$SEXUAL_ORIENTATION == "straight"])
+```
+
+```{r}
+summary4 <- ddply(Householdsmall,.(SEXUAL_ORIENTATION), summarize, mean_anxiety = mean(ANXIOUS, na.rm = TRUE), sd_anxiety = sd(ANXIOUS, na.rm = TRUE), n_obs = sum(!is.na(ANXIOUS)) )
+
+summary4
+```
+
+```{r}
+summary(Householdsmall$ANXIOUS[Householdsmall$SEXUAL_ORIENTATION == "bisexual"])
+```
+
+```{r}
+summary(Householdsmall$ANXIOUS[Householdsmall$SEXUAL_ORIENTATION == "gay or lesbian"])
+```
+
+```{r}
+summary(Householdsmall$ANXIOUS[Householdsmall$SEXUAL_ORIENTATION == "something else"])
+```
+
+```{r}
+summary(Householdsmall$ANXIOUS[Householdsmall$SEXUAL_ORIENTATION == "dont know"])
+
+```
+
+```{r}
+summary(Householdsmall$ANXIOUS[Householdsmall$SEXUAL_ORIENTATION == "straight"])
+```
+
+
+### `GRAPHS`
+
+```{r}
+select1 <- (Household_Pulse_data$MHLTH_NEED != "NA")
+Household_kids <- subset(Household_Pulse_data,select1)
+```
+
+```{r}
+levels(Household_Pulse_data$MHLTH_NEED)
+```
+
+
+```{r}
+Household_kids$MHLTH_NEED <- fct_recode(Household_kids$MHLTH_NEED,
+                                              "All NEED" = "all children need mental health treatment",
+                                              "SOME NEED" = "some but not all children", 
+                                              "NONE NEED" =  "no, none of the children",
+                                              NULL = "NA"
+)
+
+summary(Household_kids$MHLTH_NEED)
+```
+
+```{r}
+Household_kids$MHLTH_GET <- fct_recode(Household_kids$MHLTH_GET,
+                                              "All GET" = "all children get the mental health treatment they need",
+                                              "SOME GET" = "some but not all children", 
+                                              "NONE GET" =  "no, none of the children",
+                                              NULL = "NA"
+)
+summary(Household_kids$MHLTH_GET)
+```
+
+```{r}
+Household_kids$SO_recode <- fct_recode(Household_kids$SEXUAL_ORIENTATION, 
+                                       "Gay or Lesbian" = "gay or lesbian", 
+                                       "Straight" = "straight",
+                                       "Bisexual" = "bisexual",
+                                       "Other" = "something else",
+                                        NULL = "dont know",
+                                        NULL = "NA"
+) 
+
+summary(Household_kids$SO_recode)
+```
+
+```{r}
+d_SO_GET <- Household_kids %>% drop_na(SO_recode, MHLTH_GET)
+```
+
+```{r}
+p <- ggplot(data = d_SO_GET,
+            mapping = aes(x = MHLTH_GET, fill = SO_recode)) 
+
+p + geom_bar(position = "dodge",
+             mapping = aes(y = ..prop.., group = SO_recode))
+
+```
+
+```{r}
+d_SO_NEED <- Household_kids %>% drop_na(SO_recode, MHLTH_NEED)
+```
+
+```{r}
+p2 <- ggplot(data = d_SO_NEED,
+            mapping = aes(x = MHLTH_NEED, fill = SO_recode)) 
+
+p2 + geom_bar(position = "dodge",
+             mapping = aes(y = ..prop.., group = SO_recode))
+
+```
+
+```{r}
+Household_kids$DOWN_recode <- fct_recode(Household_kids$DOWN,
+                                              "NO DAYS" = "no days in past 2 wks feeling depressed",
+                                              "SEVERAL" = "several days over past 2 wks", 
+                                              "MORE THAN HALF" =  "more than half the days over past 2 wks",
+                                              "NEARLY EVERYDAY" =  "nearly every day",
+                                              NULL = "NA"
+)
+```
+
+```{r}
+d_SO_Down <- Household_kids %>% drop_na(SO_recode, DOWN_recode)
+```
+
+```{r}
+p3 <- ggplot(data = d_SO_Down,
+            mapping = aes(x = DOWN_recode, fill = SO_recode)) 
+
+p3 + geom_bar(position = "dodge",
+             mapping = aes(y = ..prop.., group = SO_recode))
+
+```
+
+```{r}
+Household_kids$ANXIOUS_recode <- fct_recode(Household_kids$ANXIOUS,
+                                              "NO DAYS" = "no anxiety over past 2 wks",
+                                              "SEVERAL" = "several days anxiety over past 2 wks", 
+                                              "MORE THAN HALF" =  "more than half the days anxiety over past 2 wks",
+                                              "NEARLY EVERYDAY" =  "nearly every day anxiety",
+                                              NULL = "NA"
+)
+```
+
+```{r}
+d_SO_Anxiety <- Household_kids %>% drop_na(SO_recode, ANXIOUS_recode)
+```
+
+```{r}
+p4 <- ggplot(data = d_SO_Anxiety,
+            mapping = aes(x = ANXIOUS_recode, fill = SO_recode)) 
+
+p4 + geom_bar(position = "dodge",
+             mapping = aes(y = ..prop.., group = SO_recode))
+```
+
+```{r}
+Householdsmall$MHLTH_recode <- cut(Householdsmall$MHLTH_NEED, breaks = c(0,1,2))
+summary(Householdsmall$MHLTH_recode)
+```
+
+```{r}
+Householdsmall$MHLTH_recode2 <- cut(Householdsmall$MHLTH_GET, breaks = c(0,1,2))
+summary(Householdsmall$MHLTH_recode2)
+```
+
+### `LINE GRAPHS`
+
+```{r}
+plineplot1 <- ggplot(data = Householdsmall,
+            mapping = aes(x = DOWN,
+                          y = ANXIOUS,
+                          color = SEXUAL_ORIENTATION,
+                          fill = SEXUAL_ORIENTATION))
+
+plineplot1 + geom_point() + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10()
+ 
+
+```
+
+```{r}
+plineplot1a <- ggplot(data = Householdsmall,
+            mapping = aes(x = ANXIOUS,
+                          y = MHLTH_GET,
+                          color = SEXUAL_ORIENTATION,
+                          fill = SEXUAL_ORIENTATION))
+
+plineplot1a + geom_point() + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10()
+```
+
+
+
+```{r}
+plineplot2 <- ggplot(data = Householdsmall, 
+                     mapping = aes(x = ANXIOUS,
+                                   y = MHLTH_NEED,
+                                   color = SEXUAL_ORIENTATION,
+                                   fill = SEXUAL_ORIENTATION))
+plineplot2 + geom_point() + 
+  geom_smooth(method = "loess") +
+  scale_x_log10()
+```
+
+```{r}
+plineplot3 <- ggplot(data = Householdsmall, 
+                     mapping = aes(x = DOWN,
+                                   y = MHLTH_NEED,
+                                   color = SEXUAL_ORIENTATION,
+                                   fill = SEXUAL_ORIENTATION))
+plineplot3 + geom_point() + 
+  geom_smooth(method = "loess") +
+  scale_x_log10()
+```
+
+```{r}
+plineplot4 <- ggplot(data = Householdsmall, 
+                     mapping = aes(x = DOWN,
+                                   y = MHLTH_GET,
+                                   color = SEXUAL_ORIENTATION,
+                                   fill = SEXUAL_ORIENTATION))
+plineplot4 + geom_point() + 
+  geom_smooth(method = "loess") +
+  scale_x_log10()
+```
+
+```{r}
+plineplot5 <- ggplot(data = Householdsmall, 
+                     mapping = aes(x = ANXIOUS,
+                                   y = MHLTH_GET,
+                                   color = SEXUAL_ORIENTATION,
+                                   fill = SEXUAL_ORIENTATION))
+plineplot5 + geom_point() + 
+  geom_smooth(method = "loess") +
+  scale_x_log10()
+```
+
+
+### `LM/ANOVA (LOGISTIC)`
+
+
+
+```{r}
+model_1b <- lm(MHLTH_GET ~ SEXUAL_ORIENTATION, data = Householdsmall)
+stargazer(model_1b, type = "text")
+```
+
+
+```{r}
+model_2 <- lm(MHLTH_GET ~ SEXUAL_ORIENTATION*MHLTH_DIFFCLT + GENID_DESCRIBE + I(DOWN^2), data = Householdsmall)
+stargazer(model_2, type = "text")
+```
+
+
+
+```{r}
+model_3 <- lm(MHLTH_NEED ~ SEXUAL_ORIENTATION*MHLTH_DIFFCLT + GENID_DESCRIBE + DOWN, data = Householdsmall)
+stargazer(model_3, type = "text")
+```
+
+
+
+```{r}
+model_4 <- lm(MHLTH_NEED ~ SEXUAL_ORIENTATION*MHLTH_DIFFCLT + GENID_DESCRIBE + I(ANXIOUS^2), data = Householdsmall)
+stargazer(model_4, type = "text")
+```
+
+```{r}
+model_5 <- lm(MHLTH_GET ~ SEXUAL_ORIENTATION*MHLTH_DIFFCLT + GENID_DESCRIBE + ANXIOUS, data = Householdsmall)
+stargazer(model_5, type = "text")
+```
+
+
+```{r}
+to_be_predicted_1 <- data.frame(SEXUAL_ORIENTATION = "bisexual",  MHLTH_DIFFCLT = "unable to get treatment due to difficulty",
+                        GENID_DESCRIBE = "male", DOWN = 0:3)
+
+to_be_predicted_1$yhat1 <- predict(model_2, newdata = to_be_predicted_1)
+to_be_predicted_1$yhat2 <- predict(model_3, newdata = to_be_predicted_1)
+
+anova(model_2,model_3)
+```
+
+```{r}
+to_be_predicted_2 <- data.frame(SEXUAL_ORIENTATION = "bisexual",  MHLTH_DIFFCLT = "unable to get treatment due to difficulty",
+                        GENID_DESCRIBE = "male", ANXIOUS = 0:3)
+
+to_be_predicted_2$yhat3 <- predict(model_4, newdata = to_be_predicted_2)
+to_be_predicted_2$yhat4 <- predict(model_5, newdata = to_be_predicted_2)
+
+anova(model_4,model_5)
+```
+
+
+```{r}
+d_for_graphing <- data.frame(DOWN = 0:3, 
+                             to_be_predicted_1$yhat1,
+                             to_be_predicted_1$yhat2)
+
+p_predvals <- ggplot(d_for_graphing, aes(DOWN))
+p_predvals + geom_line(aes(y = to_be_predicted_1.yhat1), color = 'blue') +
+  geom_line(aes(y = to_be_predicted_1.yhat2), color = 'red')
+```
+
+```{r}
+d2_for_graphing <- data.frame(ANXIOUS = 0:3, 
+                             to_be_predicted_2$yhat3,
+                             to_be_predicted_2$yhat4)
+
+p2_predvals <- ggplot(d2_for_graphing, aes(ANXIOUS))
+
+p2_predvals + geom_line(aes(y = to_be_predicted_2.yhat3), color = 'orange') +
+  geom_line(aes(y = to_be_predicted_2.yhat4), color = 'green')
+```
+
+
+### `OLS MODELS`
+
+```{r}
+select3 <- (Householdsmall$MHLTH_NEED != "NA")
+d_smallneed <- subset(Householdsmall, select3)
+```
+
+```{r}
+select4 <- (Householdsmall$MHLTH_GET !="NA")
+d_smallget <-subset(Householdsmall, select4)
+```
+
+```{r}
+d_smallneed$MentHealthKids <- as.numeric( 
+  (d_smallneed$MHLTH_NEED == "1") |
+  (d_smallneed$MHLTH_NEED == "2") )
+```
+
+```{r}
+ols_out1 <- lm(MHLTH_NEED ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION, data = d_smallneed)
+stargazer(ols_out1, type = "text")
+```
+
+
+
+```{r}
+ols_out1a <- lm(DOWN ~ MHLTH_NEED-1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION + MHLTH_DIFFCLT + MHLTH_SATISFD, data = d_smallneed)
+stargazer(ols_out1a, type = "text")
+```
+
+```{r}
+ols_out1b <- lm(ANXIOUS ~ -1 + MHLTH_NEED + ANXIOUS + SEXUAL_ORIENTATION*SOCIAL1 , data = d_smallneed)
+stargazer(ols_out1b, type = "text")
+```
+
+```{r}
+ols_out1c <- lm(MHLTH_NEED ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION* KINDWORK , data = d_smallneed)
+stargazer(ols_out1c, type = "text")
+```
+
+```{r}
+ols_out1d <- lm(MHLTH_NEED ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION + ENROLLNONE + MHLTH_DIFFCLT , data = d_smallneed)
+stargazer(ols_out1d, type = "text")
+```
+
+```{r}
+ols_out2 <- lm(MHLTH_GET ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION + MHLTH_DIFFCLT + MHLTH_SATISFD, data = d_smallneed)
+stargazer(ols_out2, type = "text")
+```
+
+```{r}
+ols_out2a <- lm(MHLTH_GET ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION*SOCIAL1, data = d_smallneed)
+stargazer(ols_out2a, type = "text")
+```
+
+```{r}
+ols_out2b <- lm(MHLTH_GET ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION + KINDWORK, data = d_smallneed)
+stargazer(ols_out2b, type = "text")
+```
+
+```{r}
+ols_out2c <- lm(MHLTH_GET ~ -1 + DOWN + ANXIOUS + SEXUAL_ORIENTATION + ENROLLNONE, data = d_smallneed)
+stargazer(ols_out2c, type = "text")
+```
+
+```{r}
+p_avg_byenrolled <- ggplot(d_SO_Anxiety, aes(x =SO_recode, fill = MHLTH_NEED))
+
+p_avg_byenrolled + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~ENROLLNONE)
+```
+
+```{r}
+p_avg_bywork <- ggplot(d_SO_Anxiety, aes(x =SO_recode, fill = MHLTH_NEED))
+
+p_avg_bywork + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~KINDWORK)
+```
+
+```{r}
+p_avg_bysocial <- ggplot(d_SO_Down, aes(x =SO_recode, fill = MHLTH_NEED))
+
+p_avg_bysocial + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SOCIAL1)
+```
+
+```{r}
+p_avg_bymhdiff <- ggplot(d_SO_Down, aes(x =SO_recode, fill = MHLTH_NEED))
+
+p_avg_bymhdiff + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~MHLTH_DIFFCLT)
+```
+
+
+```{r}
+xtabs (~ d_SO_Down$MHLTH_NEED  + d_SO_Down$SEXUAL_ORIENTATION + d_SO_Down$DOWN)
+``` 
+
+
+
+
+
+
+### `DEPRESSION TREE MODEL`
+
+```{r}
+select <- (Household_Pulse_data$DOWN != "NA")
+
+Household_down <- subset(Household_Pulse_data, select)
+Household_down$DOWN <- fct_drop(Household_down$DOWN)
+```
+
+```{r}
+Household_down$down_recode <- as.numeric( 
+  (Household_down$DOWN == "several days over past 2 wks") |
+    (Household_down$DOWN == "more than half the days over past 2 wks") | 
+    (Household_down$DOWN == "nearly every day") )
+```
+
+```{r}
+down_for_tree <- select(Household_down, -DOWN)
+
+tree_mod1 <- rpart(down_recode ~ ., data = Household_down, method = "class", cp = 0.01)
+tree_mod1
+```
+
+```{r}
+rpart.plot(tree_mod1)
+```
+
+```{r}
+down_for_tree2 <- select(down_for_tree, - ANXIOUS, - MHLTH_NEED, - MHLTH_GET, - SEXUAL_ORIENTATION)
+
+tree_mod2 <- rpart(down_recode ~ ., data = down_for_tree2, method = "class", cp = 0.0021)
+tree_mod2
+
+```
+
+```{r}
+rpart.plot(tree_mod2)
+```
+
+### `ANXIETY TREE MODEL`
+
+```{r}
+select2 <- (Household_Pulse_data$ANXIOUS != "NA")
+
+Household_anxious <- subset(Household_Pulse_data, select2)
+Household_anxious$ANXIOUS <- fct_drop(Household_anxious$ANXIOUS)
+```
+
+```{r}
+Household_anxious$anxious_recode <- as.numeric( 
+  (Household_anxious$ANXIOUS == "several days anxiety over past 2 wks") |
+    (Household_anxious$ANXIOUS == "more than half the days anxiety over past 2 wks") | 
+    (Household_anxious$ANXIOUS == "nearly every day anxiety") )
+```
+
+```{r}
+anxious_for_tree <- select(Household_anxious, -ANXIOUS)
+
+tree_mod3 <- rpart(anxious_recode ~ ., data = Household_anxious, method = "class", cp = 0.001)
+tree_mod3
+```
+
+```{r}
+rpart.plot(tree_mod3)
+```
+
+```{r}
+anxious_for_tree2 <- select(anxious_for_tree, - DOWN, - MHLTH_NEED, - MHLTH_GET, - SEXUAL_ORIENTATION)
+
+tree_mod4 <- rpart(down_recode ~ ., data = down_for_tree2, method = "class", cp = 0.0021)
+tree_mod4
+
+```
+
+```{r}
+rpart.plot(tree_mod4)
+```
+
+### `KNN`
+
+
+```{r}
+
+NN <- length(Household_Pulse_data$SEXUAL_ORIENTATION)
+set.seed(12345)
+restrict_1 <- (runif(NN) < 0.3)
+summary(restrict_1)
+```
+
+
+```{r}
+Householdsmall <- subset(Household_Pulse_data, restrict_1)
+```
+
+DOWN:Level Re-code (Add this Code!)
+
+```{r}
+levels(Householdsmall$DOWN) <- c(levels(Householdsmall$DOWN), "several/more than half")
+```
+
+```{r}
+Householdsmall$DOWN[Householdsmall$DOWN %in% c("several days over past 2 wks", "more than half the days over past 2 wks")] <- "several/more than half"
+```
+
+```{r}
+Householdsmall$DOWN <- droplevels(Householdsmall$DOWN)
+```
+
+ANXIOUS:Level Re-code
+
+```{r}
+levels(Householdsmall$ANXIOUS) <- c(levels(Householdsmall$ANXIOUS), "several/more than half")
+```
+
+```{r}
+Householdsmall$ANXIOUS[Householdsmall$ANXIOUS %in% c("several days anxiety over past 2 wks", "more than half the days anxiety over past 2 wks")] <- "several/more than half"
+```
+
+```{r}
+Householdsmall$ANXIOUS <- droplevels(Householdsmall$ANXIOUS)
+```
+
+Sexual Orientation: Level Re-code
+
+```{r}
+levels(Householdsmall$SEXUAL_ORIENTATION) <- c(levels(Householdsmall$SEXUAL_ORIENTATION), "LGBTQ")
+```
+
+```{r}
+Householdsmall$SEXUAL_ORIENTATION[Householdsmall$SEXUAL_ORIENTATION %in% c("gay or lesbian", "bisexual")] <- "LGBTQ"
+```
+
+```{r}
+Householdsmall$SEXUAL_ORIENTATION <- droplevels(Householdsmall$SEXUAL_ORIENTATION)
+```
+
+
+### Actual KNN:
+
+Factor Re-codes:
+
+DOWN-
+
+```{r}
+Householdsmall$DOWN_recode <- fct_recode(Householdsmall$DOWN, 
+                                        "0" = "no days in past 2 wks feeling depressed",
+                                "0.5" = "several/more than half", 
+                                "1" = "nearly every day",
+                                NULL = "NA"
+)
+
+Householdsmall$DOWN_recode <- as.numeric(as.character(Householdsmall$DOWN_recode))[Householdsmall$DOWN_recode]
+```
+
+ANXIOUS
+```{r}
+Householdsmall$ANXIOUS_recode <- fct_recode(Householdsmall$ANXIOUS, 
+                                        "0" = "no anxiety over past 2 wks",
+                                "0.5" = "several/more than half", 
+                                "1" = "nearly every day anxiety",
+                                NULL = "NA"
+)
+
+Householdsmall$ANXIOUS_recode <- as.numeric(as.character(Householdsmall$ANXIOUS_recode))[Householdsmall$ANXIOUS_recode]
+```
+
+SEXUAL_ORIENTATION
+
+```{r}
+Householdsmall$SEXUAL_ORIENTATION_recode <- fct_recode(Householdsmall$SEXUAL_ORIENTATION, 
+                                        "0" = "straight",
+                                "0.5" = "something else", 
+                                "1" = "LGBTQ",
+                                NULL = "NA"
+)
+
+Householdsmall$SEXUAL_ORIENTATION_recode <- as.numeric(as.character(Householdsmall$SEXUAL_ORIENTATION_recode))[Householdsmall$SEXUAL_ORIENTATION_recode]
+```
+
+MHLTH_GET
+
+```{r}
+Householdsmall$MHLTH_GET_recode <- fct_recode(Householdsmall$MHLTH_GET, 
+                                        "0" = "no, none of the children",
+                                "0.5" = "some but not all children", 
+                                "1" = "all children get the mental health treatment they need",
+                                NULL = "NA"
+)
+
+Householdsmall$MHLTH_GET_recode <- as.numeric(as.character(Householdsmall$MHLTH_GET_recode))[Householdsmall$MHLTH_GET_recode]
+```
+
+Fingers Crossed:
+
+```{r}
+Householdsmall$MHLTH_NEED <- recode(Householdsmall$MHLTH_NEED, "NA" = NULL, "all children need mental health treatment" = 0, "some but not all children" = 1, "no, none of the children" = 2)
+```
+
+```{r}
+standardize_varb_to01 <- function(X_in) {
+  (X_in - min(X_in, na.rm = TRUE))/( max(X_in, na.rm = TRUE) - min(X_in, na.rm = TRUE)  )
+}
+```
+
+```{r}
+X1 <- Householdsmall$DOWN_recode
+X2 <- Householdsmall$ANXIOUS_recode
+X3 <- Householdsmall$SEXUAL_ORIENTATION_recode
+X4 <- Householdsmall$MHLTH_GET_recode
+
+Y <- Householdsmall$MHLTH_NEED
+
+nonmissingobs <- complete.cases(Y,X1,X2,X3,X4)
+
+X1 <- subset(X1, nonmissingobs)
+X2 <- subset(X2, nonmissingobs)
+X3 <- subset(X3, nonmissingobs)
+X4 <- subset(X4, nonmissingobs)
+dat_use <- data.frame(X1,X2,X3,X4)
+Y <- subset(Y, nonmissingobs)
+```
+
+```{r}
+set.seed(1234)
+NN_obs <- length(Y)
+select1 <- (runif(NN_obs) < 0.6)
+train_data <- subset(dat_use,select1)
+test_data <- subset(dat_use,(!select1))
+cl_data <- Y[select1]
+true_data <- Y[!select1]
+```
+
+```{r}
+library(caret)
+library(dplyr)
+
+require(caret)
+require(dplyr)
+
+
+for (indx in seq(1, 9, by= 2)) {
+pred_y <- knn3Train(train_data, test_data, cl_data, k = indx, l = 0, prob = FALSE, use.all = TRUE)
+num_correct_labels <- sum(pred_y == true_data)
+correct_rate <- num_correct_labels/length(true_data)
+ print(c(indx, correct_rate))
+}
+```
+
+## `CORRELATION GRAPHS`
+
+```{r}
+p_avg_byGET <- ggplot(d_SO_GET, aes(x = MHLTH_GET, fill = MHLTH_NEED))
+
+p_avg_byGET + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SO_recode)
+```
+
+```{r}
+p_avg_byDown <- ggplot(d_SO_Down, aes(x = DOWN_recode, fill = MHLTH_NEED))
+
+p_avg_byDown + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SO_recode)
+```
+
+```{r}
+p_avg_byAnxiety <- ggplot(d_SO_Anxiety, aes(x = ANXIOUS_recode, fill = MHLTH_NEED))
+
+p_avg_byAnxiety + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SO_recode)
+```
+
+```{r}
+g_SO_Down <- Household_kids %>% drop_na(SO_recode, DOWN_recode, MHLTH_GET)
+```
+
+```{r}
+g_avg_byDown <- ggplot(g_SO_Down, aes(x = DOWN_recode, fill = MHLTH_GET))
+
+g_avg_byDown + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SO_recode)
+```
+```{r}
+g_SO_Anxiety <- Household_kids %>% drop_na(SO_recode, ANXIOUS_recode, MHLTH_GET)
+```
+
+```{r}
+g_SO_Anxiety <- ggplot(g_SO_Down, aes(x = DOWN_recode, fill = MHLTH_GET))
+
+g_SO_Anxiety + geom_bar(position = "fill", width = 0.7) + scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + facet_grid(~SO_recode)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
